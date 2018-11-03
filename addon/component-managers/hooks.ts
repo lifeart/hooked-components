@@ -151,7 +151,7 @@ export default class HooksComponentManager {
     component.didInsertElement();
   }
 
-  didUpdateComponent(component: CreateComponentResult) {
+  didUpdateComponent() {
 
   }
 }
