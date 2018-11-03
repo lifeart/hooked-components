@@ -11,7 +11,6 @@ function ConferenceSpeakers(attrs = {}) {
 
 	useEffect(({current, speakers}) => {
 		updateContext({
-			date: new Date(),
 			currentlySpeaking: speakers[current],
 			moreSpeakers: (speakers.length - 1) > current
 		})

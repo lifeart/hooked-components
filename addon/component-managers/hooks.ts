@@ -15,6 +15,7 @@ type CreateComponentResult = HooksComponent<object> & { ___createComponentResult
 
 var contextMap = new WeakMap();
 var effectsMap = new WeakMap();
+var destroyEffectsMap = new WeakMap();
 var currentContext: any = null;
 
 export function extract(obj = {}, fallbackItems: any = {}) {
@@ -51,9 +52,27 @@ function shouldUseEffect(component: any, trackers: string[], newAttrs: any) {
 function runEffects(component: any, currentComponentContext: any, cb: Function) {
 	component.__effectsRunning = true;
 	component.__effectsState = currentComponentContext;
+	let destroyEffects = destroyEffectsMap.get(component);
+
 	getEffects(component).forEach(([effect, trackers]:[Function, any[]])=>{
 		if (shouldUseEffect(component, trackers, currentComponentContext)) {
-			effect(component.__effectsState);
+			let oldEffect = destroyEffects.filter(([savedEffect]:[Function])=>{
+				return effect === savedEffect;
+			})[0] || null;
+			if (oldEffect !== null) {
+				if (typeof oldEffect[1] === 'function') {
+					oldEffect[1]();
+					oldEffect[1] = null;
+				}
+			}
+			let destroyCb = effect(component.__effectsState);
+			if (typeof destroyCb === 'function') {
+				if (oldEffect) {
+					oldEffect[1] = destroyCb;
+				} else {
+					destroyEffects.push([effect, destroyCb]);
+				}
+			}
 		}
 	});
 	component.__effectsRunning = false;
@@ -123,6 +142,7 @@ export default class HooksComponentManager {
 	setOwner(instance, getOwner(this));
 	currentContext = instance;
 	effectsMap.set(instance, []);
+	destroyEffectsMap.set(instance, []);
 	instance.__isFirstRender = true;
 	let ctx = instance._renderFn.call(instance, args.named);
 	contextMap.set(instance, ctx);
@@ -139,6 +159,13 @@ export default class HooksComponentManager {
   destroyComponent(component: CreateComponentResult) {
 	component.destroy();
 	cancel(component.__lockTimer);
+	let effects = destroyEffectsMap.get(component);
+	effects.forEach(([, destroyCb]:[Function, Function | null])=>{
+		if (typeof destroyCb === 'function') {
+			destroyCb();
+		}
+	});
+	destroyEffectsMap.delete(component);
 	contextMap.delete(component);
 	effectsMap.delete(component);
   }
