@@ -31,8 +31,6 @@ All effects called during first render, on rerender effects called only if "trac
 
 ### Example
 
-Comprehensive example (nearly **exactly** the same as the [the glimmer.js guides](https://glimmerjs.com/guides/components-and-actions)):
-
 ```js
 // app/components/conference-speakers.js (.ts would also work)
 import Component from "hooks-component";
