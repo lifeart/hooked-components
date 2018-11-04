@@ -97,7 +97,7 @@ function useEffect(computeEffect, trakedItems?: Tracker | Tracker[] , useTracker
 
 
 ### How it's working?
-Current HookedComopnents implementation logic:
+Current HookedComponents implementation logic:
 
 * We run `renderFn` only once, in component creation time.
 * `renderFn` accept named params (`args`) as first argument, and return `context object`.
