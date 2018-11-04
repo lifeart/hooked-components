@@ -92,7 +92,7 @@ type Tracker = string | object | shouldRecomputeEffect;
 type cleanupComputedEffect = undefined | Function;
 function computeEffect(newContext: any): cleanupComputedEffect;
 
-function useEffect(computeEffect, trakedItems?: Tracker | Tracker[] , useTrackersOnFirstRender?: boolean = false): cleanupComputedEffect
+function useEffect(computeEffect, trakedItems?: Tracker | Tracker[] , useTrackersOnFirstRender?: boolean = false)
 ```
 
 
