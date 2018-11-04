@@ -94,6 +94,7 @@ Current HookedComopnents implementation logic:
 * if component `args` updated, it invokes `updateContext` method with updated `args`.
 * `useEffect` method adds "after `updateContext` and before `setProperties` callbacks with `updatedProps` object as argument"; 
 * if `useEffect` call return function, it will be callded before this effect call next time.
+* `updateContext` inside `useEffect` don't reinvoke effects, just patching `updatedProps` with new data.
 
 Contributing
 ------------------------------------------------------------------------------
