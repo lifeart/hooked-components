@@ -85,6 +85,16 @@ export default class ConferenceSpeakersComponent extends Component {
 ```
 
 
+### How it's working?
+Current HookedComopnents implementation logic:
+
+* We run `renderFn` only once, in component creation time.
+* `renderFn` accept named params (`args`) as first argument, and return `context object`.
+* `updateContext` method invoke existing effects and then, do `setProperties(currentContext, updatedProps)`.
+* if component `args` updated, it invokes `updateContext` method with updated `args`.
+* `useEffect` method adds "after `updateContext` and before `setProperties` callbacks with `updatedProps` object as argument"; 
+* if `useEffect` call return function, it will be callded before this effect call next time.
+
 Contributing
 ------------------------------------------------------------------------------
 
