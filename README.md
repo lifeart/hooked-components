@@ -39,11 +39,6 @@ function ConferenceSpeakers(attrs = {}) {
 
 	const { updateContext, useEffect, extract } = this;
 
-	let { current, speakers } =  extract(attrs, {
-		current: 0,
-		speakers: ['Tom', 'Yehuda', 'Ed']
-	});
-
 	useEffect(({current, speakers}) => {
 		updateContext({
 			currentlySpeaking: speakers[current],
@@ -51,16 +46,18 @@ function ConferenceSpeakers(attrs = {}) {
 		})
 	}, ['current'] );
 
-	const next = () => {
+	const next = (current) => {
 		current++;
 		updateContext({
 			current 
 		});
 	}
 
-	return {
-		current, speakers, next
-	}
+	return extract(attrs, {
+		next,
+		current: 0,
+		speakers: ['Tom', 'Yehuda', 'Ed']
+	});
 }
 
 export default class ConferenceSpeakersComponent extends Component {
@@ -80,7 +77,7 @@ export default class ConferenceSpeakersComponent extends Component {
   </ul>
 
   {{#if moreSpeakers}}
-    <button onclick={{action next}}>Next</button>
+    <button onclick={{action next this.current}}>Next</button>
   {{else}}
     <p>All finished!</p>
   {{/if}}

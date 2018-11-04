@@ -4,11 +4,6 @@ function ConferenceSpeakers(attrs = {}) {
 
 	const { updateContext, useEffect, extract } = this;
 
-	let { current, speakers } =  extract(attrs, {
-		current: 0,
-		speakers: ['Tom', 'Yehuda', 'Ed']
-	});
-
 	useEffect(({current, speakers}) => {
 		updateContext({
 			currentlySpeaking: speakers[current],
@@ -16,19 +11,19 @@ function ConferenceSpeakers(attrs = {}) {
 		})
 	}, ['current'] );
 
-	const next = () => {
+	const next = (current) => {
 		current++;
 		updateContext({
 			current 
 		});
 	}
 
-	return {
-		current, speakers, next
-	}
+	return extract(attrs, {
+		next,
+		current: 0,
+		speakers: ['Tom', 'Yehuda', 'Ed']
+	});
 }
-
-
 
 export default class ConferenceSpeakersComponent extends Component {
 	renderFn = ConferenceSpeakers;

@@ -5,9 +5,8 @@
       <li>{{speaker}}</li>
     {{/each}}
   </ul>
-
   {{#if this.moreSpeakers}}
-    <button onclick={{action this.next}}>Next</button>
+    <button onclick={{action this.next this.current}}>Next</button>
   {{else}}
     <p>All finished!</p>
   {{/if}}
