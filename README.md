@@ -85,6 +85,17 @@ export default class ConferenceSpeakersComponent extends Component {
 ```
 
 
+### useEffect API
+```ts
+function shouldRecomputeEffect(oldObject: object, newObject: object): boolean;
+type Tracker = string | object | shouldRecomputeEffect;
+type cleanupComputedEffect = undefined | Function;
+function computeEffect(newContext: any): cleanupComputedEffect;
+
+function useEffect(computeEffect, trakedItems?: Tracker | Tracker[] , useTrackersOnFirstRender?: boolean = false): cleanupComputedEffect
+```
+
+
 ### How it's working?
 Current HookedComopnents implementation logic:
 

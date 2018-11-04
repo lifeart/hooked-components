@@ -29,8 +29,8 @@ export function extract(obj = {}, fallbackItems: any = {}) {
 	return result;
 }
 
-function shouldUseEffect(component: any, trackers: string[], newAttrs: any) {
-	if (component.__isFirstRender) {
+function shouldUseEffect(component: any, trackers: any[], newAttrs: any, firstRenderControl = false) {
+	if (component.__isFirstRender && firstRenderControl === false) {
 		return true;
 	}
 	let currentComponentContext = getContext(component);
@@ -38,13 +38,31 @@ function shouldUseEffect(component: any, trackers: string[], newAttrs: any) {
 		return true;
 	}
 	let should = false;
-	trackers.forEach((path: string)=>{
+	trackers.forEach((path: string | Function )=>{
 		if (should) {
 			return;
 		}
-		if (get(currentComponentContext, path) !== get(newAttrs, path)) {
-			should = true; 
+		if (typeof path === 'function') {
+			if (path(currentComponentContext, newAttrs)) {
+				should = true;
+			}
+		} else if (typeof path === 'object' ) {
+			let tKeys = Object.keys(path);
+			let exactKeys = 0;
+			tKeys.forEach((key)=>{
+				if (get(newAttrs,key) === path[key]) {
+					exactKeys++;
+				}
+			});
+			if (exactKeys === tKeys.length) {
+				should = true;
+			}
+		} else {
+			if (get(currentComponentContext, path) !== get(newAttrs, path)) {
+				should = true; 
+			}
 		}
+
 	});
 	return should;
 }
@@ -54,8 +72,8 @@ function runEffects(component: any, currentComponentContext: any, cb: Function) 
 	component.__effectsState = currentComponentContext;
 	let destroyEffects = destroyEffectsMap.get(component);
 
-	getEffects(component).forEach(([effect, trackers]:[Function, any[]])=>{
-		if (shouldUseEffect(component, trackers, currentComponentContext)) {
+	getEffects(component).forEach(([effect, trackers, firstRenderControl]:[Function, any[], boolean])=>{
+		if (shouldUseEffect(component, trackers, currentComponentContext, firstRenderControl)) {
 			let oldEffect = destroyEffects.filter(([savedEffect]:[Function])=>{
 				return effect === savedEffect;
 			})[0] || null;
@@ -112,15 +130,19 @@ export function getContext(context: any) {
 export function getEffects(context: any) {
 	return effectsMap.get(context);
 }
-export function useEffect(fn: Function, trackers: string | string[] = []) {
+export function useEffect(fn: Function, trackers: string | string[] = [], firstRenderControl = false) {
 	if (!isArray(trackers)) {
 		if (typeof trackers === 'string') {
+			trackers = [trackers];
+		} else if (typeof trackers === 'function') {
+			trackers = [trackers];
+		} else if (typeof trackers === 'object' && trackers !== null) {
 			trackers = [trackers];
 		} else {
 			trackers = [];
 		}
 	}
-	effectsMap.get((currentContext as any)).push([fn, trackers]);
+	effectsMap.get((currentContext as any)).push([fn, trackers, firstRenderControl]);
 }
 
 export default class HooksComponentManager {
