@@ -34,6 +34,7 @@ The `hooks-component` API supports public React HooksAPI
 * `getRoute` -> `getRoute(routeName)` -> route lookup hook
 * `getStore` -> store service lookup
 
+
 ### Example
 
 ```js
@@ -83,6 +84,55 @@ export default reactComponent(ConferenceSpeakersReact);
 </div>
 ```
 
+### How to create custom hooks?
+* `createHookState` - crete application singletone with provided key and per-component instance default value;
+* `getCurrentContext` - get current cumponent context (in rendering time)
+* `getHookState` - get hook state by name
+* `destroyHookState` - destroy hook state singleton
+
+```js
+
+// utils/custom-hook.js
+
+import { createHookState, getCurrentContext } from  "hooks-component";
+
+const DUMMY_STORE = createHookState('dummy-store', function() {
+	return {
+		keys: 1
+	};
+});
+
+export function myCustomHook() {
+	let currentComponent = getCurrentContext();
+	let state = DUMMY_STORE.getContext(currentComponent);
+	return [ state, function(newState) {
+		Object.assign(state, newState);
+	}
+}
+
+```
+
+```js
+
+import { reactComponent } from "hooks-component";
+import myCustomHook from "utils/custom-hook";
+
+function ConferenceSpeakersReact() {
+	const [ state , patchState ] = myCustomHook();
+	const { keys } = state;
+
+	const next = () => {
+		patchState({
+			keys: keys + 1
+		});
+	}
+
+	return { keys }
+}
+
+export default reactComponent(ConferenceSpeakersReact);
+
+```
 
 ------------------------------------------------------------------------------
 

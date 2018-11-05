@@ -38,11 +38,12 @@ var HOOKS_STATES: {
 } = {};
 var HOOKS_STACK: IHookState[] = [];
 
-function createHookState(hookName: string, defaultValue = []): IHookState {
+export function createHookState(hookName: string, defaultValue: Function | null = null): IHookState {
 	HOOKS_STORE[hookName] = new WeakMap();
 	const state = {
 		createContext(component: IHookedComponentWrapper) {
-			HOOKS_STORE[hookName].set(component, defaultValue);
+			let initValue: any = typeof defaultValue === 'function' ? defaultValue(component) : [];
+			HOOKS_STORE[hookName].set(component, initValue);
 		},
 		getContext(component: IHookedComponentWrapper) {
 			return  HOOKS_STORE[hookName].get(component);
@@ -66,9 +67,17 @@ function createHookState(hookName: string, defaultValue = []): IHookState {
 	return state;
 }
 
-// function getHookState(hookName: string): IHookState {
-// 	return HOOKS_STATES[hookName];
-// }
+export function getCurrentContext(): null | IHookedComponentWrapper {
+	return CURRENT_CONTEXT;
+}
+
+export function destroyHookState(hookName: string) {
+	HOOKS_STACK = HOOKS_STACK.filter((item)=>item !== HOOKS_STATES[hookName]);
+	delete HOOKS_STATES[hookName];
+}
+export function getHookState(hookName: string): IHookState {
+	return HOOKS_STATES[hookName];
+}
 
 var CURRENT_CONTEXT: IHookedComponentWrapper | null = null;
 var COMPONENTS_COUNTER = 0;
@@ -77,19 +86,18 @@ var COMPONENTS_HOOKS = createHookState('hooks');
 var COMPONENTS_HOOKS_CACHE_KEYS = createHookState('hooks_cache');
 var COMPONENTS_LAYOUT_HOOKS = createHookState('layout_hooks');
 var COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS = createHookState('layout_hooks_cache');
-var COMPONENTS_TEMPLATES_CONTEXTS = createHookState('templates_context');
+var COMPONENTS_TEMPLATES_CONTEXTS = createHookState('templates_context', function() {
+	return {};
+});
 
 function scheduleRerender(compnentContext: IHookedComponentWrapper) {
 	compnentContext.renderTimer = throttle(compnentContext, 'update', 16);
 }
 
 function compnentSetup(instance: IHookedComponentWrapper) {
-	COMPONENTS_STATES.createContext(instance, []);
-	COMPONENTS_HOOKS.createContext(instance, []);
-	COMPONENTS_HOOKS_CACHE_KEYS.createContext(instance, []);
-	COMPONENTS_TEMPLATES_CONTEXTS.createContext(instance, {});
-	COMPONENTS_LAYOUT_HOOKS.createContext(instance, []);
-	COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.createContext(instance, []);
+	HOOKS_STACK.forEach((hookState)=>{
+		hookState.createContext(instance);
+	});
 }
 
 function componentDestroy(instance: IHookedComponentWrapper) {
@@ -250,9 +258,7 @@ export default class ReactHooksComponentManager {
 	let instance = this.createCompnentContext(Klass, args.named);
 	setOwner(instance, getOwner(this));
 	compnentSetup(instance);
-	beforeRerenderSetup(instance);
-	COMPONENTS_TEMPLATES_CONTEXTS.setContext(instance, instance.renderFn(args.named));
-	afterRerenderTeardown();
+	instance.update();
     return instance as IHookedComponentWrapper;
   }
 
