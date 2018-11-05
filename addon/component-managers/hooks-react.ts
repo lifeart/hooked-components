@@ -66,9 +66,9 @@ function createHookState(hookName: string, defaultValue = []): IHookState {
 	return state;
 }
 
-function getHookState(hookName: string): IHookState {
-	return HOOKS_STATES[hookName];
-}
+// function getHookState(hookName: string): IHookState {
+// 	return HOOKS_STATES[hookName];
+// }
 
 var CURRENT_CONTEXT: IHookedComponentWrapper | null = null;
 var COMPONENTS_COUNTER = 0;
