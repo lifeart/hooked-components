@@ -1,6 +1,6 @@
 import { setComponentManager } from '@ember/component';
 import { getService } from './component-managers/hooks-react';
-export { useState, useEffect, getController, getRoute } from './component-managers/hooks-react';
+export { useState, useEffect, useLayoutEffect, getController, getRoute } from './component-managers/hooks-react';
 export { getContext, updateContext, extract } from 'hooks-component/component-managers/hooks';
 export { getService };
 export function getStore() {

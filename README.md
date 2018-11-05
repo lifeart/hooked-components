@@ -27,6 +27,7 @@ The `hooks-component` API supports public React HooksAPI
 ### Builtin hooks
 * `useEffect` -> just like in React API
 * `useState` -> just like in React API
+* `useLayoutEffect` -> just like in React API
 --------
 * `getService` -> `getService(serviceName)` -> service lookup hook
 * `getController` -> `getController(serviceName)` -> controller lookup hook

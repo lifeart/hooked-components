@@ -1,4 +1,4 @@
-import { reactComponent, useEffect, useState } from "hooks-component";
+import { reactComponent, useEffect, useState, useLayoutEffect } from "hooks-component";
 
 	function ConferenceSpeakersReact() {
 		const [ speakers ] = useState(['Tom', 'Yehuda', 'Ed']);
@@ -6,6 +6,10 @@ import { reactComponent, useEffect, useState } from "hooks-component";
 
 		useEffect(() => {
 			//console.log('dummy effect');
+		});
+
+		useLayoutEffect(()=>{
+			// console.log('comeponent rendered');
 		});
 
 		const next = () => {
