@@ -101,10 +101,6 @@ Current hookedComponents implementation logic:
 * if `useEffect` call return function, it will be callded before this effect call next time.
 * `updateContext` inside `useEffect` don't reinvoke effects, just patching `updatedProps` with new data.
 
-
-### How to escape component class declaration?
-[https://gist.github.com/lifeart/f6b7245d5aecc762c9e845d700a60f60](possible component manager API aligement)
-
 Contributing
 ------------------------------------------------------------------------------
 
