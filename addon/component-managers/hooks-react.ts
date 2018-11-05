@@ -12,6 +12,7 @@ export interface ComponentManagerArgs {
 interface IHookedComponentWrapper {
 	renderFn: Function,
 	renderTimer: any,
+	currentHookCallId: number,
 	uid: number,
 	args: {
 		[key: string]: any
@@ -89,6 +90,9 @@ var COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS = createHookState('layout_hooks_cache');
 var COMPONENTS_TEMPLATES_CONTEXTS = createHookState('templates_context', function() {
 	return {};
 });
+var COMPONENT_HOOKS_CALL_COUNTER = createHookState('call-counter', function() {
+	return new WeakMap();
+});
 
 function scheduleRerender(compnentContext: IHookedComponentWrapper) {
 	compnentContext.renderTimer = throttle(compnentContext, 'update', 16);
@@ -124,10 +128,29 @@ function beforeRerenderSetup(instance: IHookedComponentWrapper) {
 	HOOKS_STACK.forEach((hookState)=>{
 		hookState.resetCallId();
 	});
+	COMPONENT_HOOKS_CALL_COUNTER.setContext(instance, new WeakMap());
 }
 
 function afterRerenderTeardown() {
 	CURRENT_CONTEXT = null;
+}
+
+export function customHook(hookFunction: Function): Function {
+	const currentContext = getCurrentContext();
+	const callCounter: WeakMap<Function,number> = COMPONENT_HOOKS_CALL_COUNTER.getContext(currentContext);
+	if (currentContext === null) {
+		throw new Error('Unable to find component context');
+	}
+	if (!callCounter.has(hookFunction)) {
+		callCounter.set(hookFunction, 0);
+	}
+	const callId = callCounter.get(hookFunction) || 0;
+	return function(...args: any) {
+		currentContext.currentHookCallId = callId;
+		const result = hookFunction.apply(currentContext, args);
+		callCounter.set(hookFunction, callId + 1);
+		return result;
+	}
 }
 
 export function useState(value: any): [any, Function] {
@@ -244,6 +267,7 @@ export default class ReactHooksComponentManager {
 		renderFn: Klass,
 		uid: COMPONENTS_COUNTER++,
 		args,
+		currentHookCallId: 0,
 		renderTimer: null,
 		update() {
 			beforeRerenderSetup(this);
