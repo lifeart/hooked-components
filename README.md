@@ -23,6 +23,16 @@ Usage in React-Way
 ------------------------------------------------------------------------------
 The `hooks-component` API supports public React HooksAPI
 
+
+### Builtin hooks
+* `useEffect` -> just like in React API
+* `useState` -> just like in React API
+--------
+* `getService` -> `getService(serviceName)` -> service lookup hook
+* `getController` -> `getController(serviceName)` -> controller lookup hook
+* `getRoute` -> `getRoute(routeName)` -> route lookup hook
+* `getStore` -> store service lookup
+
 ### Example
 
 ```js

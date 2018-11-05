@@ -76,6 +76,18 @@ export function useState(value: any): [any, Function] {
 	}.bind(CURRENT_CONTEXT) ];
 }
 
+export function getService(serviceName: string) {
+	return getOwner(CURRENT_CONTEXT).lookup('service:' + serviceName);
+}
+
+export function getController(controllerName: string) {
+	return getOwner(CURRENT_CONTEXT).lookup('controller:' + controllerName);
+}
+
+export function getRoute(routeName: string) {
+	return getOwner(CURRENT_CONTEXT).lookup('route:' + routeName);
+}
+
 export function useEffect(cb: Function, cacheKeys = false) {
 	if (CURRENT_CONTEXT === null) {
 		throw new Error('Unable to find component context');
