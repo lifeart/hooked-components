@@ -1,4 +1,4 @@
-import Component from "hooks-component";
+import hookedComponent from "hooks-component";
 
 function ConferenceSpeakers(attrs = {}) {
 
@@ -25,6 +25,4 @@ function ConferenceSpeakers(attrs = {}) {
 	});
 }
 
-export default class ConferenceSpeakersComponent extends Component {
-	renderFn = ConferenceSpeakers;
-}
+export default hookedComponent(ConferenceSpeakers);

@@ -1,17 +1,17 @@
 import { getOwner, setOwner } from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import { capabilities } from '@ember/component';
-import HooksComponent from 'hooks-component';
 import { setProperties, getProperties, get } from '@ember/object';
 import { schedule, cancel } from  '@ember/runloop';
 import { isArray } from '@ember/array';
 import { isBlank } from '@ember/utils';
 
+
+
 export interface ComponentManagerArgs {
   named: object;
   positional: any[];
 }
-type CreateComponentResult = HooksComponent<object> & { ___createComponentResult: true };
 
 var contextMap = new WeakMap();
 var effectsMap = new WeakMap();
@@ -159,8 +159,11 @@ export default class HooksComponentManager {
     });
   }
 
+  createCompnentContext(endUserFunction: Function) {
+	return new HooksComponent(endUserFunction);
+  }
   createComponent(Klass: typeof HooksComponent, args: ComponentManagerArgs): CreateComponentResult {
-	let instance = new Klass(args.named);
+	let instance = this.createCompnentContext(Klass);
 	setOwner(instance, getOwner(this));
 	currentContext = instance;
 	effectsMap.set(instance, []);
@@ -203,4 +206,34 @@ export default class HooksComponentManager {
   didUpdateComponent() {
 
   }
+}
+
+
+class HooksComponent {
+	__isFirstRender: boolean = false
+	__effectsRunning: boolean = false
+	__effectsState: object | null = null
+	__locked: boolean = false
+	__lockTimer: any = false
+	renderFn: Function
+	constructor(endUserFunction: Function) {
+		this.renderFn = endUserFunction;
+	}
+	didInsertElement() {}
+	didUpdate() {}
+	// TODO: should we have this?
+	// didRender() {}
+	destroy() {}
+	get extract() {
+	  return extract;
+	}
+	get useEffect() {
+	  return useEffect;
+	}
+	get updateContext() {
+	  return updateContext.bind(this);
+	}
+	_renderFn(attrs: any) {
+	  return this.renderFn.call(this, attrs);
+	}
 }

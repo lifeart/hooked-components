@@ -21,11 +21,7 @@ The `hooks-component` API supports part of React hooks API, including:
 	useEffect - do some calculation after dependent keys changed
 	extract - just like getWithDefault for component arguments
 
-`hooks-component` has only one public property - `renderFn`.
-
-`renderFn`  - has only one argument - named component attributes.
-
-`useEffect` - inside `renderFn` context support: function, tracked property paths in array-like style `['foo.length', 'foo', 'foo.firstObject']`;
+`useEffect` - inside `component function` context support: function, tracked property paths in array-like style `['foo.length', 'foo', 'foo.firstObject']`;
 
 All effects called during first render, on rerender effects called only if "tracked" property changed.
 
@@ -33,7 +29,7 @@ All effects called during first render, on rerender effects called only if "trac
 
 ```js
 // app/components/conference-speakers.js (.ts would also work)
-import Component from "hooks-component";
+import hookedComponent from "hooks-component";
 
 function ConferenceSpeakers(attrs = {}) {
 
@@ -60,9 +56,7 @@ function ConferenceSpeakers(attrs = {}) {
 	});
 }
 
-export default class ConferenceSpeakersComponent extends Component {
-	renderFn = ConferenceSpeakers;
-}
+export default hookedComponent(ConferenceSpeakers);
 ```
 
 ```hbs
@@ -97,10 +91,10 @@ function useEffect(computeEffect, trakedItems?: Tracker | Tracker[] , useTracker
 
 
 ### How it's working?
-Current HookedComponents implementation logic:
+Current hookedComponents implementation logic:
 
-* We run `renderFn` only once, in component creation time.
-* `renderFn` accept named params (`args`) as first argument, and return `context object`.
+* We run `component function` only once, in component creation time.
+* `component function` accept named params (`args`) as first argument, and return `context object`.
 * `updateContext` method invoke existing effects and then, do `setProperties(currentContext, updatedProps)`.
 * if component `args` updated, it invokes `updateContext` method with updated `args`.
 * `useEffect` method adds "after `updateContext` and before `setProperties` callbacks with `updatedProps` object as argument"; 
