@@ -19,58 +19,103 @@ interface IHookedComponentWrapper {
 	update(): void
 }
 
+interface IHookState {
+	callId: number,
+	createContext: Function,
+	getContext: Function,
+	deleteContext: Function,
+	setContext: Function,
+	incrementCallId: Function,
+	resetCallId: Function
+}
+
+
+var HOOKS_STORE: {
+	[key: string] : WeakMap<object,any>
+} = {};
+var HOOKS_STATES: {
+	[key: string] : IHookState
+} = {};
+var HOOKS_STACK: IHookState[] = [];
+
+function createHookState(hookName: string, defaultValue = []): IHookState {
+	HOOKS_STORE[hookName] = new WeakMap();
+	const state = {
+		createContext(component: IHookedComponentWrapper) {
+			HOOKS_STORE[hookName].set(component, defaultValue);
+		},
+		getContext(component: IHookedComponentWrapper) {
+			return  HOOKS_STORE[hookName].get(component);
+		},
+		deleteContext(component: IHookedComponentWrapper) {
+			return HOOKS_STORE[hookName].delete(component);
+		},
+		setContext(component: IHookedComponentWrapper, value: any) {
+			return HOOKS_STORE[hookName].set(component, value);
+		},
+		incrementCallId() {
+			this.callId ++;
+		},
+		resetCallId() {
+			this.callId = 0;
+		},
+		callId: 0
+	}
+	HOOKS_STATES[hookName] = state;
+	HOOKS_STACK.push(state);
+	return state;
+}
+
+function getHookState(hookName: string): IHookState {
+	return HOOKS_STATES[hookName];
+}
+
 var CURRENT_CONTEXT: IHookedComponentWrapper | null = null;
 var COMPONENTS_COUNTER = 0;
-var CURRENT_STATE_CALL = 0;
-var CURRENT_EFFECT_CALL = 0;
-var CURRENT_LAYOUT_EFFECT_CALL = 0;
-var COMPONENTS_STATES = new WeakMap();
-var COMPONENTS_HOOKS = new WeakMap();
-var COMPONENTS_HOOKS_CACHE_KEYS = new WeakMap();
-var COMPONENTS_LAYOUT_HOOKS = new WeakMap();
-var COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS = new WeakMap();
-var COMPONENTS_TEMPLATES_CONTEXTS = new WeakMap();
+var COMPONENTS_STATES = createHookState('states');
+var COMPONENTS_HOOKS = createHookState('hooks');
+var COMPONENTS_HOOKS_CACHE_KEYS = createHookState('hooks_cache');
+var COMPONENTS_LAYOUT_HOOKS = createHookState('layout_hooks');
+var COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS = createHookState('layout_hooks_cache');
+var COMPONENTS_TEMPLATES_CONTEXTS = createHookState('templates_context');
 
 function scheduleRerender(compnentContext: IHookedComponentWrapper) {
 	compnentContext.renderTimer = throttle(compnentContext, 'update', 16);
 }
 
 function compnentSetup(instance: IHookedComponentWrapper) {
-	COMPONENTS_STATES.set(instance, []);
-	COMPONENTS_HOOKS.set(instance, []);
-	COMPONENTS_HOOKS_CACHE_KEYS.set(instance, []);
-	COMPONENTS_TEMPLATES_CONTEXTS.set(instance, {});
-	COMPONENTS_LAYOUT_HOOKS.set(instance, []);
-	COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.set(instance, []);
+	COMPONENTS_STATES.createContext(instance, []);
+	COMPONENTS_HOOKS.createContext(instance, []);
+	COMPONENTS_HOOKS_CACHE_KEYS.createContext(instance, []);
+	COMPONENTS_TEMPLATES_CONTEXTS.createContext(instance, {});
+	COMPONENTS_LAYOUT_HOOKS.createContext(instance, []);
+	COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.createContext(instance, []);
 }
 
 function componentDestroy(instance: IHookedComponentWrapper) {
-	const effects = COMPONENTS_HOOKS.get(instance);
+	const effects = COMPONENTS_HOOKS.getContext(instance);
 	effects.forEach((destroyCb: any)=>{
 		if (typeof destroyCb === 'function') {
 			destroyCb();
 		}
 	});
-	const layoutEffects = COMPONENTS_LAYOUT_HOOKS.get(instance);
+	const layoutEffects = COMPONENTS_LAYOUT_HOOKS.getContext(instance);
 	layoutEffects.forEach((destroyCb: any)=>{
 		if (typeof destroyCb === 'function') {
 			destroyCb();
 		}
 	});
 	cancel(instance.renderTimer);
-	COMPONENTS_HOOKS_CACHE_KEYS.delete(instance);
-	COMPONENTS_STATES.delete(instance);
-	COMPONENTS_HOOKS.delete(instance);
-	COMPONENTS_TEMPLATES_CONTEXTS.delete(instance);
-	COMPONENTS_LAYOUT_HOOKS.delete(instance);
-	COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.delete(instance);
+	HOOKS_STACK.forEach((hookState)=>{
+		hookState.deleteContext(instance);
+	});
 }
 
 function beforeRerenderSetup(instance: IHookedComponentWrapper) {
 	CURRENT_CONTEXT = instance;
-	CURRENT_STATE_CALL = 0;
-	CURRENT_EFFECT_CALL = 0;
-	CURRENT_LAYOUT_EFFECT_CALL = 0;
+	HOOKS_STACK.forEach((hookState)=>{
+		hookState.resetCallId();
+	});
 }
 
 function afterRerenderTeardown() {
@@ -81,12 +126,12 @@ export function useState(value: any): [any, Function] {
 	if (CURRENT_CONTEXT === null) {
 		throw new Error('Unable to find component context');
 	}
-	const currentStates = COMPONENTS_STATES.get(CURRENT_CONTEXT);
-	const callId  = CURRENT_STATE_CALL;
+	const currentStates = COMPONENTS_STATES.getContext(CURRENT_CONTEXT);
+	const callId  = COMPONENTS_STATES.callId;
 	if (currentStates[callId] === undefined) {
 		currentStates.push(value);
 	}
-	CURRENT_STATE_CALL++;
+	COMPONENTS_STATES.incrementCallId();
 	return [ currentStates[callId], function(this: IHookedComponentWrapper, newValue: any) {
 		currentStates[callId] = newValue;
 		scheduleRerender(this);
@@ -110,9 +155,9 @@ export function useLayoutEffect(cb: Function,  cacheKeys = false) {
 		throw new Error('Unable to find component context');
 	}
 	const cacheKey = cacheKeys !== false ? cacheKeys.toString(): false;
-	const currentHooks = COMPONENTS_LAYOUT_HOOKS.get(CURRENT_CONTEXT);
-	const hooksCache = COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.get(CURRENT_CONTEXT);
-	const callId  = CURRENT_LAYOUT_EFFECT_CALL;
+	const currentHooks = COMPONENTS_LAYOUT_HOOKS.getContext(CURRENT_CONTEXT);
+	const hooksCache = COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.getContext(CURRENT_CONTEXT);
+	const callId  = COMPONENTS_LAYOUT_HOOKS.callId;
 
 	if (currentHooks.length - 1 < callId) {
 		currentHooks.push(cb);
@@ -133,8 +178,8 @@ export function useLayoutEffect(cb: Function,  cacheKeys = false) {
 			hooksCache[callId] = cacheKey;
 		}
 	}
-	CURRENT_LAYOUT_EFFECT_CALL++;
-	return ;
+	COMPONENTS_LAYOUT_HOOKS.incrementCallId();
+	return;
 }
 
 export function useEffect(cb: Function, cacheKeys = false) {
@@ -142,9 +187,9 @@ export function useEffect(cb: Function, cacheKeys = false) {
 		throw new Error('Unable to find component context');
 	}
 	const cacheKey = cacheKeys !== false ? cacheKeys.toString(): false;
-	const currentHooks = COMPONENTS_HOOKS.get(CURRENT_CONTEXT);
-	const hooksCache = COMPONENTS_HOOKS_CACHE_KEYS.get(CURRENT_CONTEXT);
-	const callId  = CURRENT_EFFECT_CALL;
+	const currentHooks = COMPONENTS_HOOKS.getContext(CURRENT_CONTEXT);
+	const hooksCache = COMPONENTS_HOOKS_CACHE_KEYS.getContext(CURRENT_CONTEXT);
+	const callId  = COMPONENTS_HOOKS.callId;
 
 	if (currentHooks.length - 1 < callId) {
 		currentHooks.push(cb());
@@ -159,12 +204,12 @@ export function useEffect(cb: Function, cacheKeys = false) {
 			hooksCache[callId] = cacheKey;
 		}
 	}
-	CURRENT_EFFECT_CALL++;
+	COMPONENTS_HOOKS.incrementCallId();
 	return ;
 }
 
 function executeLayoutHooks(instance: IHookedComponentWrapper) {
-	const hooks = COMPONENTS_LAYOUT_HOOKS.get(instance);
+	const hooks = COMPONENTS_LAYOUT_HOOKS.getContext(instance);
 	for (let i = 0; i < hooks.length; i++) {
 		if (typeof hooks[i] === 'function') {
 			hooks[i] = hooks[i]();
@@ -194,19 +239,19 @@ export default class ReactHooksComponentManager {
 		renderTimer: null,
 		update() {
 			beforeRerenderSetup(this);
-			setProperties(COMPONENTS_TEMPLATES_CONTEXTS.get(this), this.renderFn(this.args));
+			setProperties(COMPONENTS_TEMPLATES_CONTEXTS.getContext(this), this.renderFn(this.args));
 			afterRerenderTeardown();
 		}
 	};
-	compnentSetup(context);
 	return context;
   }
 
   createComponent(Klass: Function, args: ComponentManagerArgs): IHookedComponentWrapper {
 	let instance = this.createCompnentContext(Klass, args.named);
 	setOwner(instance, getOwner(this));
+	compnentSetup(instance);
 	beforeRerenderSetup(instance);
-	COMPONENTS_TEMPLATES_CONTEXTS.set(instance, instance.renderFn(args.named));
+	COMPONENTS_TEMPLATES_CONTEXTS.setContext(instance, instance.renderFn(args.named));
 	afterRerenderTeardown();
     return instance as IHookedComponentWrapper;
   }
@@ -233,7 +278,7 @@ export default class ReactHooksComponentManager {
   }
 
   getContext(component: any) {
-	return COMPONENTS_TEMPLATES_CONTEXTS.get(component);
+	return COMPONENTS_TEMPLATES_CONTEXTS.getContext(component);
   }
 
   didCreateComponent(component: IHookedComponentWrapper) {
