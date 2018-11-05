@@ -85,7 +85,7 @@ export default reactComponent(ConferenceSpeakersReact);
 ```
 
 ### How to create custom hooks?
-* `createHookState` - crete application singletone with provided key and per-component instance default value;
+* `createHookState` - create singleton with provided name and per-component instance default value;
 * `getCurrentContext` - get current cumponent context (in rendering time)
 * `getHookState` - get hook state by name
 * `destroyHookState` - destroy hook state singleton
