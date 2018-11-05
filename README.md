@@ -12,7 +12,71 @@ ember install hooks-component
 ```
 
 
-Usage
+This addon provide 2 DIFFERENT API's
+
+* React - Way hooks implementation (always call component function on rerender).
+* Ember - way hooks implementstion (call component function on first render only).
+
+
+
+Usage in React-Way
+------------------------------------------------------------------------------
+The `hooks-component` API supports public React HooksAPI
+
+### Example
+
+```js
+import { reactComponent, useEffect, useState } from "hooks-component";
+
+function ConferenceSpeakersReact() {
+	const [ speakers ] = useState(['Tom', 'Yehuda', 'Ed']);
+	const [ current, updateCurrent ] = useState(0);
+
+	useEffect(() => {
+		console.log('dummy effect');
+	});
+
+	const next = () => {
+		let nextSpeaker = current + 1;
+		updateCurrent(nextSpeaker);
+	}
+
+	return {
+		currentlySpeaking: speakers[current],
+		moreSpeakers: (speakers.length - 1) > current,
+		current,
+		next, speakers
+	}
+}
+
+export default reactComponent(ConferenceSpeakersReact);
+
+```
+
+```hbs
+{{!-- app/templates/components/conference-speakers-react.hbs --}}
+
+<div>
+  <p>Speaking: {{currentlySpeaking}}</p>
+  <ul>
+    {{#each speakers key="@index" as |speaker|}}
+      <li>{{speaker}}</li>
+    {{/each}}
+  </ul>
+
+  {{#if moreSpeakers}}
+    <button onclick={{action next this.current}}>Next</button>
+  {{else}}
+    <p>All finished!</p>
+  {{/if}}
+</div>
+```
+
+
+------------------------------------------------------------------------------
+
+
+Usage in Ember-Way
 ------------------------------------------------------------------------------
 
 The `hooks-component` API supports part of React hooks API, including:

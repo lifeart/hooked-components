@@ -84,7 +84,6 @@ export default class ReactHooksComponentManager {
 			currentEffectCall = 0;
 			let currentTemplateObject = templateContexts.get(this);
 			let newResult = this.renderFn(this.args);
-			console.log('newResult', newResult);
 			setProperties(currentTemplateObject, newResult);
 			currentContext = null;
 		}
