@@ -36,7 +36,7 @@ function shouldUseEffect(component: any, trackers: any[], newAttrs: any, firstRe
 		return true;
 	}
 	let should = false;
-	trackers.forEach((path: string | Function )=>{
+	trackers.forEach((path: string | Function | { [key: string] : any } )=>{
 		if (should) {
 			return;
 		}
@@ -48,7 +48,7 @@ function shouldUseEffect(component: any, trackers: any[], newAttrs: any, firstRe
 			let tKeys = Object.keys(path);
 			let exactKeys = 0;
 			tKeys.forEach((key)=>{
-				if (get(newAttrs,key) === path[key]) {
+				if (get(newAttrs, (key as any)) === path[key]) {
 					exactKeys++;
 				}
 			});
