@@ -6,8 +6,6 @@ import { schedule, cancel } from  '@ember/runloop';
 import { isArray } from '@ember/array';
 import { isBlank } from '@ember/utils';
 
-
-
 export interface ComponentManagerArgs {
   named: object;
   positional: any[];
@@ -162,7 +160,7 @@ export default class HooksComponentManager {
   createCompnentContext(endUserFunction: Function) {
 	return new HooksComponent(endUserFunction);
   }
-  createComponent(Klass: typeof HooksComponent, args: ComponentManagerArgs): CreateComponentResult {
+  createComponent(Klass: typeof HooksComponent, args: ComponentManagerArgs): HooksComponent {
 	let instance = this.createCompnentContext(Klass);
 	setOwner(instance, getOwner(this));
 	currentContext = instance;
@@ -174,14 +172,14 @@ export default class HooksComponentManager {
 	updateContext.call(instance, {});
 	instance.__isFirstRender = false;
 	currentContext = null;
-    return instance as CreateComponentResult;
+    return instance as HooksComponent;
   }
 
-  updateComponent(component: CreateComponentResult, args: ComponentManagerArgs) {
+  updateComponent(component: HooksComponent, args: ComponentManagerArgs) {
 	updateContext.call(component, args.named)
   }
 
-  destroyComponent(component: CreateComponentResult) {
+  destroyComponent(component: HooksComponent) {
 	component.destroy();
 	cancel(component.__lockTimer);
 	let effects = destroyEffectsMap.get(component);
@@ -195,11 +193,11 @@ export default class HooksComponentManager {
 	effectsMap.delete(component);
   }
 
-  getContext(component: CreateComponentResult) {
+  getContext(component: HooksComponent) {
     return contextMap.get(component);
   }
 
-  didCreateComponent(component: CreateComponentResult) {
+  didCreateComponent(component: HooksComponent) {
     component.didInsertElement();
   }
 
