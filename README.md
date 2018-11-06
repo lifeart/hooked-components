@@ -89,18 +89,26 @@ export default reactComponent(ConferenceSpeakersReact);
 * `getContextId` -> `getContextId()` -> get current instance context id (same between rerenders)
 * `getRerender` -> return binded to current instance `update` function
 * `addBeforeCallTask` -> execute some callback before component `update`
+* `addBeforeDestroyTask` -> execute some callback before any component `destroy`
 
 ```js
 
 // utils/custom-hook.js
 
-import { getContextId, getRerender, addBeforeCallTask } from  "hooks-component";
+import { getContextId, getRerender, addBeforeCallTask, addBeforeDestroyTask } from  "hooks-component";
 
 const DUMMY_STORE = {};
 var CALL_COUNTER = 0;
 
 addBeforeCallTask(()=>{
 	CALL_COUNTER = 0;
+});
+
+addBeforeDestroyTask(()=>{
+	const uid = getContextId();
+	if (uid in DUMMY_STORE) {
+		delete DUMMY_STORE[uid];
+	}
 });
 
 export function myCustomHook(componentStoreDefaultValue = {}) {

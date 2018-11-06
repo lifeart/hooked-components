@@ -38,6 +38,7 @@ var HOOKS_STATES: {
 } = {};
 var HOOKS_STACK: IHookState[] = [];
 var BEFORE_CALL_TASKS : Function[] = [];
+var BEFORE_DESTROY_TASKS : Function[] = [];
 
 export function createHookState(hookName: string, defaultValue: Function | null = null): IHookState {
 	HOOKS_STORE[hookName] = new WeakMap();
@@ -105,6 +106,10 @@ function compnentSetup(instance: IHookedComponentWrapper) {
 }
 
 function componentDestroy(instance: IHookedComponentWrapper) {
+	beforeRerenderSetup(instance, false);
+	BEFORE_DESTROY_TASKS.forEach((task)=>{
+		task();
+	});
 	const effects = COMPONENTS_HOOKS.getContext(instance);
 	effects.forEach((destroyCb: any)=>{
 		if (typeof destroyCb === 'function') {
@@ -121,21 +126,28 @@ function componentDestroy(instance: IHookedComponentWrapper) {
 	HOOKS_STACK.forEach((hookState)=>{
 		hookState.deleteContext(instance);
 	});
+	afterRerenderTeardown();
+}
+
+export function addBeforeDestroyTask(cb: Function) {
+	BEFORE_DESTROY_TASKS.push(cb);
 }
 
 export function addBeforeCallTask(cb: Function) {
 	BEFORE_CALL_TASKS.push(cb);
 }
 
-function beforeRerenderSetup(instance: IHookedComponentWrapper) {
+function beforeRerenderSetup(instance: IHookedComponentWrapper, callHooks: boolean = true) {
 	CURRENT_CONTEXT = instance;
-	HOOKS_STACK.forEach((hookState)=>{
-		hookState.resetCallId();
-	});
-	COMPONENT_HOOKS_CALL_COUNTER.setContext(instance, new WeakMap());
-	BEFORE_CALL_TASKS.forEach((task)=>{
-		task();
-	});
+	if (callHooks) {
+		HOOKS_STACK.forEach((hookState)=>{
+			hookState.resetCallId();
+		});
+		COMPONENT_HOOKS_CALL_COUNTER.setContext(instance, new WeakMap());
+		BEFORE_CALL_TASKS.forEach((task)=>{
+			task();
+		});
+	}
 }
 
 function afterRerenderTeardown() {
@@ -269,12 +281,14 @@ export function useEffect(cb: Function, cacheKeys: false | any[] = false) {
 }
 
 function executeLayoutHooks(instance: IHookedComponentWrapper) {
+	beforeRerenderSetup(instance);
 	const hooks = COMPONENTS_LAYOUT_HOOKS.getContext(instance);
 	for (let i = 0; i < hooks.length; i++) {
 		if (typeof hooks[i] === 'function') {
 			hooks[i] = hooks[i]();
 		}
 	}
+	afterRerenderTeardown();
 }
 
 export function getOwner() {
