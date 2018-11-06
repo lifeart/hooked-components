@@ -1,4 +1,4 @@
-import { getOwner, setOwner } from '@ember/application';
+import { getOwner as getOwnerNative, setOwner } from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import { capabilities } from '@ember/component';
 import { setProperties } from '@ember/object';
@@ -12,7 +12,6 @@ export interface ComponentManagerArgs {
 interface IHookedComponentWrapper {
 	renderFn: Function,
 	renderTimer: any,
-	currentHookCallId: number,
 	uid: number,
 	args: {
 		[key: string]: any
@@ -38,6 +37,7 @@ var HOOKS_STATES: {
 	[key: string] : IHookState
 } = {};
 var HOOKS_STACK: IHookState[] = [];
+var BEFORE_CALL_TASKS : Function[] = [];
 
 export function createHookState(hookName: string, defaultValue: Function | null = null): IHookState {
 	HOOKS_STORE[hookName] = new WeakMap();
@@ -68,7 +68,7 @@ export function createHookState(hookName: string, defaultValue: Function | null 
 	return state;
 }
 
-export function getCurrentContext(): null | IHookedComponentWrapper {
+function getCurrentContext(): null | IHookedComponentWrapper {
 	return CURRENT_CONTEXT;
 }
 
@@ -123,12 +123,19 @@ function componentDestroy(instance: IHookedComponentWrapper) {
 	});
 }
 
+export function addBeforeCallTask(cb: Function) {
+	BEFORE_CALL_TASKS.push(cb);
+}
+
 function beforeRerenderSetup(instance: IHookedComponentWrapper) {
 	CURRENT_CONTEXT = instance;
 	HOOKS_STACK.forEach((hookState)=>{
 		hookState.resetCallId();
 	});
 	COMPONENT_HOOKS_CALL_COUNTER.setContext(instance, new WeakMap());
+	BEFORE_CALL_TASKS.forEach((task)=>{
+		task();
+	});
 }
 
 function afterRerenderTeardown() {
@@ -146,18 +153,18 @@ export function customHook(hookFunction: Function): Function {
 	}
 	const callId = callCounter.get(hookFunction) || 0;
 	return function(...args: any) {
-		currentContext.currentHookCallId = callId;
-		const result = hookFunction.apply(currentContext, args);
+		const result = hookFunction.apply(null, args);
 		callCounter.set(hookFunction, callId + 1);
 		return result;
 	}
 }
 
 export function useState(value: any): [any, Function] {
-	if (CURRENT_CONTEXT === null) {
+	const context = getCurrentContext();
+	if (context === null) {
 		throw new Error('Unable to find component context');
 	}
-	const currentStates = COMPONENTS_STATES.getContext(CURRENT_CONTEXT);
+	const currentStates = COMPONENTS_STATES.getContext(context);
 	const callId  = COMPONENTS_STATES.callId;
 	if (currentStates[callId] === undefined) {
 		currentStates.push(value);
@@ -166,35 +173,56 @@ export function useState(value: any): [any, Function] {
 	return [ currentStates[callId], function(this: IHookedComponentWrapper, newValue: any) {
 		currentStates[callId] = newValue;
 		scheduleRerender(this);
-	}.bind(CURRENT_CONTEXT) ];
+	}.bind(context) ];
+}
+
+export function getRerender() {
+	return scheduleRerender.bind(null, getCurrentContext());
 }
 
 export function getService(serviceName: string) {
-	return getOwner(CURRENT_CONTEXT).lookup('service:' + serviceName);
+	return getOwnerNative(getCurrentContext()).lookup('service:' + serviceName);
 }
 
 export function getController(controllerName: string) {
-	return getOwner(CURRENT_CONTEXT).lookup('controller:' + controllerName);
+	return getOwnerNative(getCurrentContext()).lookup('controller:' + controllerName);
 }
 
 export function getRoute(routeName: string) {
-	return getOwner(CURRENT_CONTEXT).lookup('route:' + routeName);
+	return getOwnerNative(getCurrentContext()).lookup('route:' + routeName);
 }
 
-export function useLayoutEffect(cb: Function,  cacheKeys = false) {
-	if (CURRENT_CONTEXT === null) {
+export function getContextId(): number {
+	const context = getCurrentContext();
+	if (context === null) {
+		throw new Error('Unable to get context id - no context');
+	}
+	return context.uid;
+}
+
+function checkValidationKey(cacheKey: false | string, hooksCache: any[], callId: number): boolean {
+	return cacheKey === false || (hooksCache[callId] !== false) && (cacheKey !== hooksCache[callId]);
+}
+
+function getValidationKey(cacheKeys: any[] | false): string | false  {
+	return cacheKeys !== false ? cacheKeys.toString(): false;
+}
+
+export function useLayoutEffect(cb: Function,  cacheKeys: false | any[] = false): void {
+	const context = getCurrentContext();
+	if (context === null) {
 		throw new Error('Unable to find component context');
 	}
-	const cacheKey = cacheKeys !== false ? cacheKeys.toString(): false;
-	const currentHooks = COMPONENTS_LAYOUT_HOOKS.getContext(CURRENT_CONTEXT);
-	const hooksCache = COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.getContext(CURRENT_CONTEXT);
+	const cacheKey = getValidationKey(cacheKeys);
+	const currentHooks = COMPONENTS_LAYOUT_HOOKS.getContext(context);
+	const hooksCache = COMPONENTS_LAYOUT_HOOKS_CACHE_KEYS.getContext(context);
 	const callId  = COMPONENTS_LAYOUT_HOOKS.callId;
 
 	if (currentHooks.length - 1 < callId) {
 		currentHooks.push(cb);
 		hooksCache.push(cacheKey);
 	} else {
-		const mustIvalidateCache = cacheKey === false || (hooksCache[callId] !== false) && (cacheKey !== hooksCache[callId]);
+		const mustIvalidateCache = checkValidationKey(cacheKey, hooksCache, callId);
 		if (mustIvalidateCache) {
 			if (typeof currentHooks[callId] === 'function') {
 				let cachedFunction = currentHooks[callId];
@@ -213,20 +241,21 @@ export function useLayoutEffect(cb: Function,  cacheKeys = false) {
 	return;
 }
 
-export function useEffect(cb: Function, cacheKeys = false) {
-	if (CURRENT_CONTEXT === null) {
+export function useEffect(cb: Function, cacheKeys: false | any[] = false) {
+	const context = getCurrentContext();
+	if (context === null) {
 		throw new Error('Unable to find component context');
 	}
-	const cacheKey = cacheKeys !== false ? cacheKeys.toString(): false;
-	const currentHooks = COMPONENTS_HOOKS.getContext(CURRENT_CONTEXT);
-	const hooksCache = COMPONENTS_HOOKS_CACHE_KEYS.getContext(CURRENT_CONTEXT);
+	const cacheKey = getValidationKey(cacheKeys)
+	const currentHooks = COMPONENTS_HOOKS.getContext(context);
+	const hooksCache = COMPONENTS_HOOKS_CACHE_KEYS.getContext(context);
 	const callId  = COMPONENTS_HOOKS.callId;
 
 	if (currentHooks.length - 1 < callId) {
 		currentHooks.push(cb());
 		hooksCache.push(cacheKey);
 	} else {
-		const mustIvalidateCache = cacheKey === false || (hooksCache[callId] !== false) && (cacheKey !== hooksCache[callId]);
+		const mustIvalidateCache = checkValidationKey(cacheKey, hooksCache, callId);
 		if (mustIvalidateCache) {
 			if (typeof currentHooks[callId] === 'function') {
 				currentHooks[callId]();
@@ -248,9 +277,13 @@ function executeLayoutHooks(instance: IHookedComponentWrapper) {
 	}
 }
 
+export function getOwner() {
+	return getOwnerNative(getCurrentContext());
+}
+
 export default class ReactHooksComponentManager {
   static create(attrs: any) {
-    const owner = getOwner(attrs);
+    const owner = getOwnerNative(attrs);
     return new this(owner);
   }
   capabilities: any;
@@ -267,11 +300,10 @@ export default class ReactHooksComponentManager {
 		renderFn: Klass,
 		uid: COMPONENTS_COUNTER++,
 		args,
-		currentHookCallId: 0,
 		renderTimer: null,
 		update() {
 			beforeRerenderSetup(this);
-			setProperties(COMPONENTS_TEMPLATES_CONTEXTS.getContext(this), this.renderFn(this.args));
+			setProperties(COMPONENTS_TEMPLATES_CONTEXTS.getContext(this), this.renderFn.call(null, this.args));
 			afterRerenderTeardown();
 		}
 	};
@@ -280,7 +312,7 @@ export default class ReactHooksComponentManager {
 
   createComponent(Klass: Function, args: ComponentManagerArgs): IHookedComponentWrapper {
 	let instance = this.createCompnentContext(Klass, args.named);
-	setOwner(instance, getOwner(this));
+	setOwner(instance, getOwnerNative(this));
 	compnentSetup(instance);
 	instance.update();
     return instance as IHookedComponentWrapper;

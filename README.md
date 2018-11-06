@@ -33,7 +33,7 @@ The `hooks-component` API supports public React HooksAPI
 * `getController` -> `getController(serviceName)` -> controller lookup hook
 * `getRoute` -> `getRoute(routeName)` -> route lookup hook
 * `getStore` -> store service lookup
-
+* `getOwner` -> `getOwner()` -> equals `getOwner(this)` in Ember.
 
 ### Example
 
@@ -85,28 +85,45 @@ export default reactComponent(ConferenceSpeakersReact);
 ```
 
 ### How to create custom hooks?
-* `createHookState` - create singleton with provided name and per-component instance default value;
-* `getCurrentContext` - get current cumponent context (in rendering time)
-* `getHookState` - get hook state by name
-* `destroyHookState` - destroy hook state singleton
+
+* `getContextId` -> `getContextId()` -> get current instance context id (same between rerenders)
+* `getRerender` -> return binded to current instance `update` function
+* `addBeforeCallTask` -> execute some callback before component `update`
 
 ```js
 
 // utils/custom-hook.js
 
-import { createHookState, getCurrentContext } from  "hooks-component";
+import { getContextId, getRerender, addBeforeCallTask } from  "hooks-component";
 
-const DUMMY_STORE = createHookState('dummy-store', function() {
-	return {
-		keys: 1
-	};
+const DUMMY_STORE = {};
+var CALL_COUNTER = 0;
+
+addBeforeCallTask(()=>{
+	CALL_COUNTER = 0;
 });
 
-export function myCustomHook() {
-	let currentComponent = getCurrentContext();
-	let state = DUMMY_STORE.getContext(currentComponent);
+export function myCustomHook(componentStoreDefaultValue = {}) {
+	const uid = getContextId(); // current component instance ID
+	const hookCallId = CALL_COUNTER; // how many time hook called during rendering
+	if (!(uid in DUMMY_STORE)) {
+		DUMMY_STORE[uid] =  {}; // init store for component instance;
+	}
+	if (!(hookCallId in DUMMY_STORE[uid])) {
+		// init store for exact call number inside component isntance;
+		DUMMY_STORE[uid][hookCallId] = componentStoreDefaultValue;
+	}
+	// get current instance + callNumber state
+	let state = DUMMY_STORE[uid][hookCallId];
+	// get rerender function (must be inside hook)
+	let rerender = getRerender();
+	// increment hook call counter
+	CALL_COUNTER++;
+	// return current state for exact component and callNumber and update state function
 	return [ state, function(newState) {
 		Object.assign(state, newState);
+		// rerender will invoke component rerender
+		rerender();
 	}
 }
 
