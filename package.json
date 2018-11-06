@@ -1,6 +1,6 @@
 {
   "name": "hooks-component",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Experiment with `@glimmer/component` style APIs in Ember apps via existing public APIs",
   "keywords": [
     "ember-addon"
