@@ -105,7 +105,7 @@ addBeforeCallTask(()=>{
 
 export function myCustomHook(componentStoreDefaultValue = {}) {
 	const uid = getContextId(); // current component instance ID
-	const hookCallId = CALL_COUNTER; // how many time hook called during rendering
+	const hookCallId = CALL_COUNTER; // how many times hook called during rendering
 	if (!(uid in DUMMY_STORE)) {
 		DUMMY_STORE[uid] =  {}; // init store for component instance;
 	}
@@ -135,16 +135,24 @@ import { reactComponent } from "hooks-component";
 import myCustomHook from "utils/custom-hook";
 
 function ConferenceSpeakersReact() {
-	const [ state , patchState ] = myCustomHook();
+	const [ state , patchState ] = myCustomHook({ keys: 1 });
+	const [ fish, patchFish ] = myCustomHook({ salmon: 1 });
 	const { keys } = state;
+	const { salmon } = fish;
 
 	const next = () => {
 		patchState({
 			keys: keys + 1
-		});
+		})
 	}
 
-	return { keys }
+	const addSalmon = () => {
+		patchFish({
+			salmon: salmon + 1
+		})
+	}
+
+	return { keys, next, salmon }
 }
 
 export default reactComponent(ConferenceSpeakersReact);
