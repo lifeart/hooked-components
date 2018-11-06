@@ -152,7 +152,7 @@ export function customHook(hookFunction: Function): Function {
 		callCounter.set(hookFunction, 0);
 	}
 	const callId = callCounter.get(hookFunction) || 0;
-	return function(...args: any) {
+	return function(...args: any[]) {
 		const result = hookFunction.apply(null, args);
 		callCounter.set(hookFunction, callId + 1);
 		return result;
