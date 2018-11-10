@@ -11,7 +11,7 @@
     "doc": "doc",
     "test": "tests"
   },
-  "repository": "https://github.com/lifeart/hooks-component",
+  "repository": "https://github.com/lifeart/hooked-component",
   "scripts": {
     "build": "ember build",
     "lint:js": "eslint .",
