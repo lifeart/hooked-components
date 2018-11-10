@@ -15,7 +15,7 @@ ember install hooks-component
 This addon provide 2 DIFFERENT API's
 
 * React - Way hooks implementation (always call component function on rerender).
-* Ember - way hooks implementstion (call component function on first render only).
+* Ember - way hooks implementation (call component function on first render only).
 
 
 
