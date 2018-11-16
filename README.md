@@ -1,7 +1,7 @@
 hooks-component
 ==============================================================================
 
-Addon used to experiment with `@glimmer/component` style APIs in Ember apps via
+Addon used to experiment with `React Hooks` style APIs in Ember apps via
 existing public APIs.
 
 Installation
