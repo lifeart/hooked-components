@@ -12,11 +12,10 @@ ember install hooks-component
 ```
 
 
-This addon provide 2 DIFFERENT API's
+This addon provide 2 **DIFFERENT** - API's
 
-* React - Way hooks implementation (always call component function on rerender).
-* Ember - way hooks implementation (call component function on first render only).
-
+* React way hooks implementation (always call component function on rerender).
+* Ember way hooks implementation (call component function on first render only).
 
 
 Usage in React-Way
@@ -69,15 +68,15 @@ export default reactComponent(ConferenceSpeakersReact);
 {{!-- app/templates/components/conference-speakers-react.hbs --}}
 
 <div>
-  <p>Speaking: {{currentlySpeaking}}</p>
+  <p>Speaking: {{this.currentlySpeaking}}</p>
   <ul>
     {{#each speakers key="@index" as |speaker|}}
       <li>{{speaker}}</li>
     {{/each}}
   </ul>
 
-  {{#if moreSpeakers}}
-    <button onclick={{action next this.current}}>Next</button>
+  {{#if this.moreSpeakers}}
+    <button onclick={{action this.next this.current}}>Next</button>
   {{else}}
     <p>All finished!</p>
   {{/if}}
