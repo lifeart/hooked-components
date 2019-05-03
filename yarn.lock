@@ -769,24 +769,14 @@
   integrity sha512-ONhaKPIufzzrlNbqtWFFd+jlnemX6lJAgq9ZeiZtS7I1PIf/la7CW4m83rTXRnVnsMbW2k56pGYu7AUFJD9Pow==
 
 "@types/ember-qunit@^3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@types/ember-qunit/-/ember-qunit-3.4.0.tgz#9077d2c5091e13586ca61e9d7355419d5e3af197"
-  integrity sha512-tpi4QIQ9FsgmCWpnd2Nm5IC+Gjh8m9e5EdXDc9tpVU/473jMJBqDTcBImTEmrxi4hFE0gYB81vjYpt02S0eLGQ==
+  version "3.4.6"
+  resolved "https://registry.yarnpkg.com/@types/ember-qunit/-/ember-qunit-3.4.6.tgz#b09ae84192c16fbd1da0d1be26fa02b67691250d"
+  integrity sha512-ARB2JDNV3qzrZ94fC+YdV9jT9hYAXP8pXcqAVzVEYVL5/upSxKcYZjiCSScpKzXikN8yieIGNqSGArhQrcdzFA==
   dependencies:
     "@types/ember" "*"
     "@types/ember-test-helpers" "*"
 
-"@types/ember-test-helpers@*":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@types/ember-test-helpers/-/ember-test-helpers-0.7.1.tgz#14b9f132e9c60c2dfaf7a10ace937bfb7157fb26"
-  integrity sha512-ypEz7Hly/IU9pB2fq5riY+tS5CVmVMPf4Q6Ff7jaxMVOtxrD4ZuE2LmAHQzn2ofywAtnLla9j90aIU/WGPkdxg==
-  dependencies:
-    "@types/ember" "*"
-    "@types/htmlbars-inline-precompile" "*"
-    "@types/jquery" "*"
-    "@types/rsvp" "*"
-
-"@types/ember-test-helpers@^1.0.0":
+"@types/ember-test-helpers@*", "@types/ember-test-helpers@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/ember-test-helpers/-/ember-test-helpers-1.0.0.tgz#bc0ac361ab3361726ab6479f9e15f325916d6718"
   integrity sha512-JI/08XkvRE2fV37PKiFUtANtbmQJU2VW9wV1tRb1/FLxILCauql5vkYJpz+FOuMS7KVOC8YsbuWL4a+HBykHbg==
@@ -804,16 +794,7 @@
     "@types/jquery" "*"
     "@types/rsvp" "*"
 
-"@types/ember@*":
-  version "2.8.31"
-  resolved "https://registry.yarnpkg.com/@types/ember/-/ember-2.8.31.tgz#96245a213c408dd829c4b87894a9cd6c00ed8071"
-  integrity sha512-kD9TKf+LRSXYfRHIb6uhwr2h15vcaRtd92ujrJ+rWDOBb67MDkWo2748w+6nrrAURIl2Ak4xKkCKnJ8RNnNAZw==
-  dependencies:
-    "@types/handlebars" "*"
-    "@types/jquery" "*"
-    "@types/rsvp" "*"
-
-"@types/ember@^3.0.15":
+"@types/ember@*", "@types/ember@^3.0.15":
   version "3.0.15"
   resolved "https://registry.yarnpkg.com/@types/ember/-/ember-3.0.15.tgz#b251e49bc5fec916f9bd84cffebe1ef1a737146e"
   integrity sha512-TIjXYEdt+owTdB88iS0eIhyeNc3F3b0OOP6TyO/JTVyzRhSmSuGVgaW6a3UGCeDHaZLI0Ig2Pn8wMVQAHhPfww==
