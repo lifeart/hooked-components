@@ -870,6 +870,45 @@
     "@types/jquery" "*"
     "@types/rsvp" "*"
 
+"@types/ember__application@*":
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/@types/ember__application/-/ember__application-3.16.1.tgz#5df182adac2c8b8a268b2bee04d287423e6e785c"
+  integrity sha512-ox12bbIWO+hUDbaK4w/+2L91UC2ghiBSaoRub7GDG7oSH5ty3bkEKW1jxhxXRXfp0Ot7syOR9S6mKJrX/aTZdQ==
+  dependencies:
+    "@types/ember__application" "*"
+    "@types/ember__engine" "*"
+    "@types/ember__object" "*"
+    "@types/ember__routing" "*"
+
+"@types/ember__component@*":
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/@types/ember__component/-/ember__component-3.16.1.tgz#e5bb50df57b27495b21257683c3622c747c4f213"
+  integrity sha512-R+14WDOsTwhHw5/eCYyz+GAwph2GMyda7GYJv3N4nRqphKxGxezpWGb0I6IqTQUAIZc+XPb2maVJGiBFquSrBQ==
+  dependencies:
+    "@types/ember__component" "*"
+    "@types/ember__object" "*"
+    "@types/jquery" "*"
+
+"@types/ember__controller@*":
+  version "3.16.2"
+  resolved "https://registry.yarnpkg.com/@types/ember__controller/-/ember__controller-3.16.2.tgz#6ecefd2ac703fd0a535335b69a9ddb9fd36817ab"
+  integrity sha512-c8YFeqxHAdtcg0DuiKW+JDQUCLMcyHfPXDx5g6mnQcuaJC+YXfKXLsGOGA/8UBkJKJoxEmPpf/184EVAvQnOLw==
+  dependencies:
+    "@types/ember__object" "*"
+
+"@types/ember__engine@*":
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/@types/ember__engine/-/ember__engine-3.16.1.tgz#fbb28cdb9895ee64631be0b4f81473bd5ba787e1"
+  integrity sha512-q4S1SszB8lfP76he5dtt5Oi97GvqGOsvxKy1PsK+EcaQbbvD3QJe55+QfVxUr2EKp4iXG1XNUX90HyDqJZldKQ==
+  dependencies:
+    "@types/ember__engine" "*"
+    "@types/ember__object" "*"
+
+"@types/ember__error@*":
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/@types/ember__error/-/ember__error-3.16.1.tgz#752d977f4ee35d4fa66bcfeebae6e85240fc62a6"
+  integrity sha512-bnB58krc18B8qgSMsRBbrVbNb4msyb8pMzS9Yo3brw/bRjuPb1ONUrjieAVHeespXlXNJOusvvX/pji641iCPQ==
+
 "@types/ember__object@*":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/ember__object/-/ember__object-3.0.0.tgz#f7a7d9e14c60708092486f00afc9c21bf592a9a2"
@@ -882,6 +921,24 @@
   resolved "https://registry.yarnpkg.com/@types/ember__polyfills/-/ember__polyfills-3.0.1.tgz#efe630c9449f4faf3e4d5f450036d37ec85d1cd9"
   integrity sha512-+5kPby+P6PJNwLLwKOU3t1h8MsNHuSD8us6EuRnQbAy+48evT0k9Cbsni6n8QdUvcHsmBiPc25amlKEjxD13Ug==
 
+"@types/ember__routing@*":
+  version "3.16.3"
+  resolved "https://registry.yarnpkg.com/@types/ember__routing/-/ember__routing-3.16.3.tgz#1c3198b3ee3ed1e795ff6170b399d9c86f105be3"
+  integrity sha512-u7/0qEryslRq65CvMxux3mgXwn6I+Qe+kDDrskpKs7umNY/QD7iktaeyv5OXt4NxDxIaod3ONJCxnQ0knowERg==
+  dependencies:
+    "@types/ember__component" "*"
+    "@types/ember__controller" "*"
+    "@types/ember__object" "*"
+    "@types/ember__routing" "*"
+    "@types/ember__service" "*"
+
+"@types/ember__service@*":
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/@types/ember__service/-/ember__service-3.16.1.tgz#e8f941ec50ff4a7531487dc60830b4e6c7da6a47"
+  integrity sha512-XYl75IZGE+ZqRiCr9tBLXNYBVM9WX18AQHw/73QSQP/7sfyv5QFP/C/KvJrwP9wJmqh0BS2lVAXP3Nx4/BRNTw==
+  dependencies:
+    "@types/ember__object" "*"
+
 "@types/ember__string@*":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@types/ember__string/-/ember__string-3.0.1.tgz#d17c4e1716bd2a6b5fbc2d787da4bf732d5611fb"
@@ -889,12 +946,14 @@
   dependencies:
     "@types/handlebars" "*"
 
-"@types/ember__test-helpers@^0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@types/ember__test-helpers/-/ember__test-helpers-0.7.1.tgz#8f042e5e578925c48fa594ea96b6a553b356cf30"
-  integrity sha512-v0kupoNOE4o63wlNhfayW5+NAW4GGmJnDbFM7Molc9SHPUYcoeaN47Gg3aMNpShWn6MDI5FG0onDeiU3MWl8gg==
+"@types/ember__test-helpers@^1.7.3":
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/@types/ember__test-helpers/-/ember__test-helpers-1.7.3.tgz#a3553f5c3318032dcdf03b7b511254b9edf930eb"
+  integrity sha512-5LGWJHkdbKYrrA/l4QFeu2WNE0iaz5lBjc980VLzOqyfy2/r4CbZbuHtg+oL5jYQDnB2Udpz9b3EwwM3lg7hsA==
   dependencies:
     "@types/ember" "*"
+    "@types/ember__application" "*"
+    "@types/ember__error" "*"
     "@types/htmlbars-inline-precompile" "*"
 
 "@types/handlebars@*":
